@@ -1,6 +1,8 @@
 # Predefined effects
 
-Eight lighting effects of the firmware that take a few parameters and no keys: a profile with one of them has it as its only [lighting layer](lighting.md), `lght_00.d` of **13 bytes**, `lghtcnt.cnt` = 1, and no `.k` or `.r`. iCUE allows one per profile, alone.
+Eight lighting effects of the firmware that take a few parameters and no keys: a profile with one of them enabled has it as its only executable [lighting layer](lighting.md), `lght_00.d` of **13 bytes**, `lghtcnt.cnt` = 1, and no `.k` or `.r`. A disabled preset remains in [PROFILE.ZIP](profile-zip.md#selection-order-and-disabled-layers) with no lighting descriptor and `lghtcnt.cnt` = 0. iCUE allows one predefined effect per profile, alone; combinations involving disabled layers are not established.
+
+All predefined effects apply to the whole keyboard; iCUE offers no selectable key subset. Rain offers random colours or two alternating colours and speed, with no direction control.
 
 ```
 offset  size  field
@@ -38,6 +40,7 @@ Colours `ff0000` and `0000ff` where the colour type is alternating.
 | ColorShift, alternating red and blue, slow | `00 01 03 00 00 ff 00 00 ff 00 00 ff ff` |
 | ColorWave, alternating red and blue, slow, up | `04 01 03 03 00 ff 00 00 ff 00 00 ff ff` |
 | Rain, random, fast | `06 03 01 00 00 00 00 00 00 00 00 00 00` |
+| Rain, alternating red and blue, fast | `06 03 03 00 00 ff 00 00 ff 00 00 ff ff` |
 | RainbowWave, slow, down | `03 01 00 04 00 00 00 00 00 00 00 00 00` |
 | RainbowWave, slow, right | `03 01 00 02 00 00 00 00 00 00 00 00 00` |
 | SpiralRainbow, fast, counter-clockwise | `02 03 00 06 00 00 00 00 00 00 00 00 00` |
@@ -48,6 +51,6 @@ Colours `ff0000` and `0000ff` where the colour type is alternating.
 | SpiralRainbow, slow, clockwise | `02 01 00 05 00 00 00 00 00 00 00 00 00` |
 | TypeLighting, key mode, alternating `12ab34` and `fe7a05`, duration long | `08 00 03 00 03 12 ab 34 ff fe 7a 05 ff` |
 
-Not seen: duration short (1); the alternating colours of ColorPulse, Rain and TypeLighting in its ripple mode, which iCUE offers; colour type 2 ("selected"), which iCUE does not offer; direction 7 ("from centre").
+Not seen: duration short (1); the alternating colours of ColorPulse and TypeLighting in its ripple mode, which iCUE offers; colour type 2 ("selected"), which iCUE does not offer; direction 7 ("from centre").
 
 [OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB) sets the hardware effect of Corsair keyboards with the same descriptor and the same type numbers, written as `lght_00.d`.

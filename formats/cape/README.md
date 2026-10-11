@@ -16,7 +16,7 @@ Everything in these pages was observed on a K95 RGB Platinum with firmware 3.29 
 | `lght_NN.d` | 13, 37 or 553 | descriptor of lighting layer NN | [lighting](lighting.md), [custom effects](custom-effects.md), [predefined effects](predefined-effects.md) |
 | `lght_NN.k` | 4 + 1 per cell | the cells of the layer | [lighting](lighting.md) |
 | `lght_NN.r` | 1024 | the colours of a static layer | [lighting](lighting.md) |
-| `PROFILE.ZIP` | variable | iCUE's own copy of the profile | below |
+| `PROFILE.ZIP` | variable | compressed XML model of the profile | [PROFILE.ZIP](profile-zip.md) |
 
 File names are ASCII, at most 12 characters with the terminating zero, in 8.3 style.
 
@@ -32,12 +32,12 @@ A profile created in an empty slot by iCUE has `PROFILE.DAT` = `50 01 00 00`, `P
 
 The flash has room for **2038 sectors of 4 KiB** for the files of the three slots. A file takes ceil(size / 4096) sectors, at least one; `PROFILE.ZIP` counts like any other file. [`0e 17 0b`](../../host-to-device/0e/17/0b/0e170b.md) answers the free space. Clearing a slot frees every file of it.
 
-How many files the file system can hold is not known: up to 27 files in one slot and 40 in all have been seen.
+How many files the file system can hold is not known: up to 27 files in one slot and 41 in all have been seen.
 
 ## `PROFILE.ZIP`
 
-iCUE's own copy of the profile, for iCUE: a 4-byte **big-endian** uncompressed length followed by a zlib stream (Qt's `qCompress` format), holding iCUE's serialisation of the profile. **The firmware does not read it**: a slot without it works, but iCUE 5 shows that slot as empty. Its content is not described here.
+The editable profile model: a 4-byte **big-endian** uncompressed length followed by a zlib stream containing UTF-8 XML. Despite its name it is not a ZIP archive. [PROFILE.ZIP](profile-zip.md) describes the container, XML versions and fields, actions, indicators, lighting layers and their relationship to the firmware files, for the structure produced by iCUE 5.51.40.0 on this keyboard.
 
-iCUE reads the slot table and `PROFILE.I` files at start. If a local copy has the same GUID but an older revision cookie, it reads that slot's ZIP and reconstructs the local profile without writing the slot or reading its raw action and lighting files. Slots whose copies still match are left alone. The reconstructed copy takes the new cookie and resets its local `blobCookie` to 0; lighting-layer UUIDs can be regenerated while the layer's name, keys and parameters stay the same. Always update the cookie together with a changed ZIP. Local blob metadata can also cause a reload, so equality of the revision cookie alone is not a sufficient cache rule.
+**The firmware does not need the backup to run a slot**, but the host uses it to reconstruct the editable model. A slot without it can work on the keyboard while appearing empty in the host application. Keep the backup consistent with the executable files and update the slot revision cookie when it changes; see [revision cookies and reconstruction](profile-zip.md#revision-cookies-and-reconstruction).
 
-When loading an ordinary keystroke such as Shift+B, iCUE 5.51.40.0 reconstructs its action with `execHint` = `OnBoth` even if the backup says `OnPress`, without rewriting the slot. Both hints compile to the same subtype-01 macro and DAT start 0/run 1. Writers should use `OnBoth` for a newly edited ordinary keystroke; this metadata normalisation changes no firmware events.
+The backup retains information absent from the binary files, including disabled lighting layers, names and original transition points. Its lighting-layer count can therefore exceed `lghtcnt.cnt`, which counts only enabled layers. See [lighting model](profile-zip.md#lighting-model) and [consistency of the slot files](profile-zip.md#consistency-of-the-slot-files).
