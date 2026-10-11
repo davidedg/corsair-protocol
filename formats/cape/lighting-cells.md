@@ -1,6 +1,6 @@
 # Lighting cells
 
-The lighting files of a profile ([lighting](lighting.md)) do not use [key indices](key-index.md): a layer lists its keys as **cells**, the positions of the keyboard's LED matrix. A K95 RGB Platinum has **135 cells**: 116 keys and the 19 LEDs of the light bar along the top edge.
+The lighting files of a profile ([lighting](lighting.md)) do not use [key indices](key-index.md): a layer lists its keys as **cells**, the positions of the keyboard's LED matrix. The UK/ISO layout of the K95 RGB Platinum has **135 cells**: 116 keys and the 19 LEDs of the light bar along the top edge.
 
 ## The cells, in iCUE's order
 
@@ -170,4 +170,31 @@ r < 8                      cell = 8*c + r                                 ->   0
 r >= 8                     cell = 8*(12 + c%6) + 4*(c/6) + (r - 8)        ->  96..143
 ```
 
-Rows 0 to 7 stay where they are; rows 8 to 11 (keypad, media, G and M keys) go to the columns 12 to 17 of the matrix. The rule gives every cell of the table above, and the cells it gives for the other keys of that numbering (the JIS and ANSI keys, the G7 to G18 and M keys of other models, and the three buttons above) are exactly the ones missing from the table. The table above is the reference: a writer must not emit a cell that is not in it.
+Rows 0 to 7 stay where they are; rows 8 to 11 (keypad, media, G and M keys) go to the columns 12 to 17 of the matrix. The rule gives every cell of the table above, and the cells it gives for the other keys of that numbering (the JIS and ANSI keys, the G7 to G18 and M keys of other models, and the three buttons above) are exactly the ones missing from the table. The table above is the reference for UK/ISO. For another physical layout, use its actual key set and the order below.
+
+## Other physical layouts
+
+The UK/ISO table above is verified on hardware. The following cell assignments and ordering are derived from iCUE's layout tables; they have not been checked on another physical keyboard.
+
+| Layout | Number of cells including the light bar |
+|---|---|
+| UK/ISO | 135 |
+| US/ANSI | 134 |
+| BR | 136 |
+| JP | 138 |
+| KR | 136 |
+
+The extra or alternative keys use these cells. The ids below are iCUE's ordering ids, not firmware key indices or USB usages.
+
+| iCUE key name | Ordering id | Cell | Layouts |
+|---|---|---|---|
+| Backslash | `0x52` | 70 | US, KR |
+| International1 | `0x55` | 94 | JP, BR |
+| International2 | `0x43` | 53 | JP |
+| International3 | `0x57` | 15 | JP |
+| International4 | `0x9b` | 45 | JP |
+| International5 | `0x9a` | 29 | JP |
+| Lang1 | `0x42` | 45 | KR |
+| Lang2 | `0x40` | 29 | KR |
+
+iCUE orders a layer's keys by its ordering ids, then translates each key to a cell. For US, BR and KR this agrees with reading the LED grid row by row, followed by the light bar in the order above. For JP it does not: International5 and International4 come after the G keys and before the light bar, rather than in their grid row. Sort by key id, not by cell number. The 19 light-bar cells keep their fixed order; the profile, brightness and Win Lock buttons remain outside the layer cell set.

@@ -38,7 +38,9 @@ offset  size  field
 11      5     zeros
 ```
 
-The key is a [key index](key-index.md). iCUE writes the macro files before `PROFILE.DAT`, and names them in the order of the entries (ascending key index) in lower-case hexadecimal: `M000` ... `M009`, `M00a`, ... The name is only the string this entry points to.
+The key is a [key index](key-index.md). iCUE writes the macro files before `PROFILE.DAT`, and names them in the order of the entries (ascending iCUE key id, normally the same as firmware key-index order) in lower-case hexadecimal: `M000` ... `M009`, `M00a`, ... The name is only the string this entry points to.
+
+A Macro assigned to the profile button is the exception to firmware key-index order: its DAT entry and `M###` file come **last**, after every other source key, although its firmware index is `46`. Its iCUE ordering id is `0x0b8d`. An unassigned action in iCUE's profile copy has no DAT entry or macro file.
 
 ### Start condition and run type
 

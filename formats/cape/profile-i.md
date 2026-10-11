@@ -16,7 +16,7 @@ offset  size  field
 265     3     00 00 00
 ```
 
-- The GUID and the cookie are the ones of the slot table ([`0e 17 04`](../../host-to-device/0e/17/04/0e1704.md), [`07 15 SS 00`](../../host-to-device/07/15/SS/00/0715SS00.md)), where the cookie has 24 bits. iCUE raises the cookie at every save of the profile and wraps it from `0xfffffe` to 0.
+- The GUID and the cookie are the ones of the slot table ([`0e 17 04`](../../host-to-device/0e/17/04/0e1704.md), [`07 15 SS 00`](../../host-to-device/07/15/SS/00/0715SS00.md)), where the cookie has 24 bits. iCUE raises the cookie during editing and wraps it from `0xfffffe` to 0, so a single save may advance it by more than one. When the local copy has an older cookie, iCUE reloads the slot's `PROFILE.ZIP` without writing the slot.
 - The profile button shows the profile colour, the brightness button the brightness colour, the Win Lock button the on or off colour. The firmware shows the colours as soon as they are written and the keyboard is back in hardware mode, without switching slot.
 - **There is one brightness colour**, the one of the 100 % level: the firmware shows it dimmed at the lower levels, down to off at 0 %. Nothing else in the 268 bytes varies between iCUE's files but the GUID, the cookie, the name and these colours.
 - The Win Lock on and off colours are there from firmware 3.1, according to iCUE.

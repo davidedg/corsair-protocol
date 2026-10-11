@@ -37,3 +37,7 @@ How many files the file system can hold is not known: up to 27 files in one slot
 ## `PROFILE.ZIP`
 
 iCUE's own copy of the profile, for iCUE: a 4-byte **big-endian** uncompressed length followed by a zlib stream (Qt's `qCompress` format), holding iCUE's serialisation of the profile. **The firmware does not read it**: a slot without it works, but iCUE 5 shows that slot as empty. Its content is not described here.
+
+iCUE reads the slot table and `PROFILE.I` files at start. If a local copy has the same GUID but an older revision cookie, it reads that slot's ZIP and reconstructs the local profile without writing the slot or reading its raw action and lighting files. Slots whose copies still match are left alone. The reconstructed copy takes the new cookie and resets its local `blobCookie` to 0; lighting-layer UUIDs can be regenerated while the layer's name, keys and parameters stay the same. Always update the cookie together with a changed ZIP. Local blob metadata can also cause a reload, so equality of the revision cookie alone is not a sufficient cache rule.
+
+When loading an ordinary keystroke such as Shift+B, iCUE 5.51.40.0 reconstructs its action with `execHint` = `OnBoth` even if the backup says `OnPress`, without rewriting the slot. Both hints compile to the same subtype-01 macro and DAT start 0/run 1. Writers should use `OnBoth` for a newly edited ordinary keystroke; this metadata normalisation changes no firmware events.
