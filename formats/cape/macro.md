@@ -12,7 +12,7 @@ offset  size  field
 ```
 
 - iCUE's names for the subtypes: Macro 0, Shortcut 1, Media 2, Text 3, MouseKeyRemap 4. Only 0, 1 and 3 are used on this keyboard.
-- **The number of events is big-endian** and counts events, not bytes: a file with a 4-byte event has fewer events than (size - 8) / 2. A text of 751 events starts `4d 03 00 02 ef 00 00 00`, and the firmware plays all 751. Byte 2 has always been 0; whether it belongs to the count is not known (it would take 65536 events).
+- **The number of events is big-endian** and counts events, not bytes: a file with a 4-byte event has fewer events than (size - 8) / 2. A text of 751 events starts `4d 03 00 02 ef 00 00 00`, and the firmware plays all 751. The format uses a three-byte count; byte 2 is zero in the observed hardware files. Firmware playback of more than 65535 events has not been physically verified.
 - The firmware plays the events in order. Presses may overlap (B pressed before A is released). There is no end marker, and no key repeat while a key is held by the macro.
 
 ## Events

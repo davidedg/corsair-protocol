@@ -12,7 +12,7 @@ Type 14 (RecordedLighting) has never been seen. Byte 0 of every descriptor is th
 
 ## Limits and order
 
-- **With all layers enabled, a profile has at most 5 layers of the custom kind (static colours and custom effects, mixed), or 1 predefined effect alone**: iCUE refuses more. Combinations involving disabled layers are not established.
+- **A profile has at most 5 layers of the custom kind (static colours and custom effects, mixed), or 1 predefined effect alone**: iCUE refuses more. Disabled custom layers still count towards the five-layer interface limit: adding a sixth is refused even with one of the five disabled. A disabled Rain preset also occupies the single predefined slot: adding another layer is refused with the same maximum-layer warning.
 - **The files follow the enabled layers in reverse XML order**: `lght_00` is the bottom enabled layer, the last file the top enabled layer. It is not the order in which the layers were created.
 - iCUE writes the files of a layer in the order `.d`, `.k`, `.r` (where they exist), layer 0 first, and `lghtcnt.cnt` last.
 
@@ -20,7 +20,7 @@ Type 14 (RecordedLighting) has never been seen. Byte 0 of every descriptor is th
 
 The [PROFILE.ZIP lighting model](profile-zip.md#selection-order-and-disabled-layers) retains disabled layers with `enabled=false`, including their names, order, selection and effect parameters. Firmware lighting files contain only enabled layers, numbered contiguously from 00 in reverse XML order. Thus disabling the middle of three static layers preserves the other two file groups byte for byte while compacting their indices.
 
-With all layers disabled, `lghtcnt.cnt` is zero and no lighting descriptor, key or colour files remain. Re-enabling Rain or static layers with unchanged parameters restores their files byte for byte, including the original numbering. Disabled layers are distinct from empty selections, black colours and zero opacity. How disabled layers count towards the host interface's layer limits is not established.
+With all layers disabled, `lghtcnt.cnt` is zero and no lighting descriptor, key or colour files remain. Re-enabling unchanged parameters restores their files byte for byte, including the original numbering. This has been verified for Rain, Visor and a scene containing Static, Solid, Gradient, Ripple and Wave together, with partial and complete muting of the custom scene. Disabled layers are distinct from empty selections, black colours and zero opacity. The interface counts disabled layers towards its limits of five custom layers or one predefined effect, whereas `lghtcnt.cnt` counts only enabled layers. Disabling a layer does not free a place in either family.
 
 ## `lght_NN.d` of a static layer
 

@@ -1,6 +1,6 @@
 # Predefined effects
 
-Eight lighting effects of the firmware that take a few parameters and no keys: a profile with one of them enabled has it as its only executable [lighting layer](lighting.md), `lght_00.d` of **13 bytes**, `lghtcnt.cnt` = 1, and no `.k` or `.r`. A disabled preset remains in [PROFILE.ZIP](profile-zip.md#selection-order-and-disabled-layers) with no lighting descriptor and `lghtcnt.cnt` = 0. iCUE allows one predefined effect per profile, alone; combinations involving disabled layers are not established.
+Eight lighting effects of the firmware that take a few parameters and no keys: a profile with one of them enabled has it as its only executable [lighting layer](lighting.md), `lght_00.d` of **13 bytes**, `lghtcnt.cnt` = 1, and no `.k` or `.r`. A disabled preset remains in [PROFILE.ZIP](profile-zip.md#selection-order-and-disabled-layers) with no lighting descriptor and `lghtcnt.cnt` = 0. iCUE allows one predefined effect per profile, alone. Disabling the preset does not free its place or permit mixing it with custom layers.
 
 All predefined effects apply to the whole keyboard; iCUE offers no selectable key subset. Rain offers random colours or two alternating colours and speed, with no direction control.
 
@@ -37,6 +37,7 @@ Colours `ff0000` and `0000ff` where the colour type is alternating.
 | Setting | `lght_00.d` |
 |---|---|
 | ColorPulse, random, fast | `01 03 01 00 00 00 00 00 00 00 00 00 00` |
+| ColorPulse, alternating red and blue, slow | `01 01 03 00 00 ff 00 00 ff 00 00 ff ff` |
 | ColorShift, alternating red and blue, slow | `00 01 03 00 00 ff 00 00 ff 00 00 ff ff` |
 | ColorWave, alternating red and blue, slow, up | `04 01 03 03 00 ff 00 00 ff 00 00 ff ff` |
 | Rain, random, fast | `06 03 01 00 00 00 00 00 00 00 00 00 00` |
@@ -45,12 +46,14 @@ Colours `ff0000` and `0000ff` where the colour type is alternating.
 | RainbowWave, slow, right | `03 01 00 02 00 00 00 00 00 00 00 00 00` |
 | SpiralRainbow, fast, counter-clockwise | `02 03 00 06 00 00 00 00 00 00 00 00 00` |
 | TypeLighting, key mode, random, duration medium | `08 00 01 00 02 00 00 00 00 00 00 00 00` |
+| TypeLighting, key mode, random, duration short | `08 00 01 00 01 00 00 00 00 00 00 00 00` |
 | TypeLighting, ripple mode, random, speed medium | `09 02 01 00 00 00 00 00 00 00 00 00 00` |
+| TypeLighting, ripple mode, alternating red and blue, fast | `09 03 03 00 00 ff 00 00 ff 00 00 ff ff` |
 | Visor, alternating red and blue, medium | `05 02 03 00 00 ff 00 00 ff 00 00 ff ff` |
 | ColorWave, alternating `12ab34` and `fe7a05`, fast, left | `04 03 03 01 00 12 ab 34 ff fe 7a 05 ff` |
 | SpiralRainbow, slow, clockwise | `02 01 00 05 00 00 00 00 00 00 00 00 00` |
 | TypeLighting, key mode, alternating `12ab34` and `fe7a05`, duration long | `08 00 03 00 03 12 ab 34 ff fe 7a 05 ff` |
 
-Not seen: duration short (1); the alternating colours of ColorPulse and TypeLighting in its ripple mode, which iCUE offers; colour type 2 ("selected"), which iCUE does not offer; direction 7 ("from centre").
+Not established: colour type 2 ("selected"), which iCUE does not offer, and direction 7 ("from centre"). The stored examples cover all three key-mode duration values; they do not establish every combination of colour, speed and duration on the keyboard.
 
 [OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB) sets the hardware effect of Corsair keyboards with the same descriptor and the same type numbers, written as `lght_00.d`.
