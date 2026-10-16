@@ -7,8 +7,8 @@ offset  size  field
 0       2     header 49 00
 2       16    GUID of the profile (the same 16 bytes as in its slot table entry)
 18      4     revision cookie (u32; iCUE keeps it within 0 to 0xfffffe)
-22      ~64   name, UTF-16LE, zero terminated (iCUE: "HW Profile 1", ...)
-...     ...   zeros
+22      230   name, UTF-16LE, at most 115 units, zero terminated when shorter (iCUE: "HW Profile 1", ...), zero padded
+252     1     00
 253     3     profile indicator colour, RGB (default ff 00 00)
 256     3     brightness indicator colour, RGB (default ff ff ff)
 259     3     Win Lock on colour, RGB (default 00 ff ff)
@@ -22,6 +22,7 @@ offset  size  field
 - The Win Lock on and off colours are there from firmware 3.1, according to iCUE.
 - The colour that iCUE's interface lets one give to a profile is not in this file (nor in any other file of the slot).
 - A writer that changes the name, the cookie or the colours should patch the file it read rather than build a new one: the bytes after the name may hold the rest of a longer name.
+- **Name length.** iCUE copies at most 230 bytes of the name: a longer one is cut to 115 units, with no terminator, and the cut can fall inside a surrogate pair. iCUE's own reader then runs past the area: a 128-character name written by iCUE comes back as its first 115 units followed by U+FF00, made of byte 252 and the red byte of the profile colour. A reader stops after 115 units and drops a lone first half of a pair at the end. A writer that keeps a terminator writes at most 114 units.
 
 ## Example
 

@@ -101,7 +101,7 @@ Indicator and transition colours are strings with components normalised to 0 thr
 
 The stored component strings use up to six significant digits, with a dot as decimal separator. An omitted alpha means full opacity. iCUE writes a fully opaque colour as `rgb(...)`, including a colour previously represented as `rgba(... 1)`; a non-opaque colour uses `rgba(...)` with its alpha. Only these two colour spaces are described here.
 
-The omission test also accepts alpha extremely close to one. With 32-bit float arithmetic, set `s = alpha + 1`; alpha is omitted when `abs(s - 2) * 100000 <= min(abs(s), 2)`. For a 16-bit alpha component, 65534/65535 omits alpha, whereas 65533/65535 keeps it. Alpha zero and 0.5 remain explicit. This spelling rule is separate from the [binary sample rounding](custom-effects.md#exact-sampling-rules).
+Each component is one of 256 levels: iCUE holds 8 bits per component and writes the 32-bit float value of k/255 with six significant digits, so 80/255 is `0.313726`, not `0.313725`. A component read with another value, such as `0.3`, is taken as its nearest level, `floor(c * 255 + 0.5)`, and written so: `0.301961` (77/255). The alpha is omitted at level 255; zero and every other level remain explicit. The omission test, in 32-bit float arithmetic with `s = alpha + 1`, is `abs(s - 2) * 100000 <= min(abs(s), 2)`, which among the 256 levels holds for 255 alone. This spelling rule is separate from the [binary sample rounding](custom-effects.md#exact-sampling-rules), which rounds a component the same way.
 
 An optional colour has `<nullopt>true</nullopt>` when absent. When present, it has `<nullopt>false</nullopt>` followed by `<data>rgb(...)</data>` or its RGBA equivalent. Absence is distinct from a black or transparent colour.
 
