@@ -1,6 +1,6 @@
 # `PROFILE.ZIP`: compressed profile model
 
-This page describes files stored on the **K95 RGB Platinum (`1b1c:1b2d`), firmware 3.29, bootloader 3.03**, with the profile structure produced by **iCUE 5.51.40.0**. The versions and field layouts below describe that combination; compatibility with other software versions, devices or firmware is not established.
+This page describes files stored on the **K95 RGB Platinum (`1b1c:1b2d`), firmware 3.29, bootloader 3.03**, with the profile structure produced by **iCUE 5.51.40.0**. **iCUE 5.52.93** was checked against it: it wrote the same class versions and the same binary files for a new slot with a static lighting layer and a key remap, and it read slots written in this format without changing them. The versions and field layouts below describe these combinations; compatibility with other software versions, devices or firmware is not established.
 
 `PROFILE.ZIP` contains the editable model of one slot: actions, lighting layers, indicator colours and Win Lock settings. The firmware uses the corresponding [binary profile files](README.md#the-files-of-a-slot) to execute the profile. It does not need this backup to run the slot. A slot without the backup can work on the keyboard while appearing empty in the host application.
 
@@ -282,7 +282,7 @@ The exact conversion of XML transition points to binary colour samples and the k
 
 ## Revision cookies and reconstruction
 
-The host reads the slot table and `PROFILE.I` before deciding whether it needs a backup. With no matching local copy, or with the same slot GUID and an older local revision cookie, it reads the necessary `PROFILE.ZIP` and reconstructs the model without writing flash or reading the raw action and lighting files. Other matching slots can remain in the local cache.
+The host reads the slot table and `PROFILE.I` before deciding whether it needs a backup. With no matching local copy, or with the same slot GUID and an older local revision cookie, it reads the necessary `PROFILE.ZIP` and reconstructs the model without writing flash or reading the raw action and lighting files. Other matching slots can remain in the local cache. A matching local copy does not rule out a read: iCUE was seen reading the `PROFILE.ZIP` of a slot whose GUID and cookie matched its copy, then rewriting the copy with the same cookie and renewed lighting-layer UUIDs. What triggers such a read is not known; it writes nothing to the keyboard.
 
 Consequently, a changed backup must be accompanied by an updated revision cookie in both the slot table and `PROFILE.I`. The table stores the cookie as a 24-bit value; INFO stores it as a 32-bit little-endian value. One save can advance the cookie by more than one.
 
