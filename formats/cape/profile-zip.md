@@ -139,7 +139,7 @@ The name and UUID identify the editable action and are not present in the firmwa
 repeatCount, repeatMode, delay, delayMode, randomDelayFrom, randomDelayTo
 ```
 
-The stored actions use `repeatCount` = 1, `repeatMode` = `NoRepeat`, `delayMode` = `Constant`, and zero delay fields. The presence of additional repeat metadata does not establish hardware support for other repeat modes.
+The stored actions use `repeatCount` = 1, `repeatMode` = `NoRepeat`, `delayMode` = `Constant`, and zero delay fields. Only a `MacroAction` carries its repeat mode and count into the [DAT entry](profile-dat.md#start-condition-and-run-type); the delay fields are not written for any action. The current hardware Macro editor offers the four execution triggers, but no repetition or termination control; the writing rules also describe values retained in imported profiles.
 
 `executionHints`, version **201**, has:
 
@@ -147,7 +147,7 @@ The stored actions use `repeatCount` = 1, `repeatMode` = `NoRepeat`, `delayMode`
 terminateOnSecondExec, restartOnSecondExec, execHint, retainOriginalKeyOutput
 ```
 
-`terminateOnSecondExec` and `retainOriginalKeyOutput` are false in the described actions. `restartOnSecondExec` is true for the recorded macros and false for the other action types. The following `execHint` values have corresponding [DAT settings](profile-dat.md#start-condition-and-run-type):
+`terminateOnSecondExec` and `retainOriginalKeyOutput` are false in the described actions. `restartOnSecondExec` is true for the recorded macros and false for the other action types. None of the three is written into the firmware files. Only a `MacroAction` takes its `execHint` into its [DAT entry](profile-dat.md#start-condition-and-run-type); every other action is written on press and run once, whatever its hint:
 
 | Action and hint | DAT start / run / repeat |
 |---|---|
@@ -156,6 +156,8 @@ terminateOnSecondExec, restartOnSecondExec, execHint, retainOriginalKeyOutput
 | Macro, `OnRelease` | `11 / 01 / 01` |
 | Macro, `WhilePressed` | `00 / 03 / 01` |
 | Macro, `Toggle` | `00 / 04 / 01` |
+| Macro, `OnBoth` or a long press | `00 / 01 / 01` |
+| Text, key combination, any hint | `00 / 01 / 01` |
 
 An ordinary key combination with `OnPress` can describe the same subtype-01 macro events as `OnBoth`. On import, iCUE normalises such an action to `OnBoth` without rewriting the slot. Writers should use `OnBoth` for a newly edited ordinary key combination.
 
@@ -170,11 +172,11 @@ Fields below follow the common `base`, in the listed order:
 | `TextAction` | 201 | `text`, `delayBetweenCharacters` |
 | `MediaAction` | 200 | `action` |
 
-- A simple `KeyRemapAction` uses `keyName` as its destination and an empty `keyStroke`. `remapGroup` distinguishes Keyboard (0), Mouse (6), key combinations (7) and Language keys (9). A plain remap becomes a [MAP entry](profile-map.md); the backup retains the destination's symbolic name even when the firmware mapping is limited.
-- A key combination uses the `keyStroke` collection of symbolic destination keys and becomes a DAT entry plus a subtype-01 [macro file](macro.md#key-combination-subtype-01). Keyboard remaps with `holdingKeyEnabled` also use DAT and subtype 01: `holdingKeyType` = `OnPress` adds the requested delay, in milliseconds, between press and release; `Toggle` uses delay zero and DAT run type `84`, repeat zero. The XML can retain a requested interval larger than the firmware's maximum delay; the [binary delay is clamped](macro.md#imitate-holding-key).
-- The described `MacroAction` objects have `terminationMethod` = `Interrupt` and `highPriority` = `false`. Their `events` collection becomes a DAT entry and a subtype-00 macro file.
+- A simple `KeyRemapAction` uses `keyName` as its destination and an empty `keyStroke`; with a non-empty `keyStroke` the key combination is written and `keyName` is not. `programPath` is not written. "Imitate holding key" with `holdingKeyType` = `WhilePressed` is written as the plain remap. `remapGroup` distinguishes Keyboard (0), Mouse (6), key combinations (7) and Language keys (9). A plain remap becomes a [MAP entry](profile-map.md); the backup retains the destination's symbolic name even when the firmware mapping is limited.
+- A key combination uses the `keyStroke` collection of symbolic destination keys, pressed in the order of the list, and becomes a DAT entry plus a subtype-01 [macro file](macro.md#key-combination-subtype-01). Keyboard remaps with `holdingKeyEnabled` also use DAT and subtype 01: `holdingKeyType` = `OnPress` adds the requested delay, in milliseconds, between press and release; `Toggle` uses delay zero and DAT run type `84`, repeat zero. The XML can retain a requested interval larger than the firmware's maximum delay; the [binary delay is clamped](macro.md#imitate-holding-key).
+- A `MacroAction`'s `events` collection becomes a DAT entry and a subtype-00 macro file. `terminationMethod` and `highPriority` are not written: a macro with `ExecuteUninterrupted` has the same files as one with `Interrupt`. These values remain distinct in the backup and can affect software playback while iCUE is running; equality of the firmware files does not make them interchangeable in the XML.
 - `TextAction` retains the original Unicode text and `delayBetweenCharacters` in milliseconds. The subtype-03 macro file contains keyboard events for the text, including modifiers, rather than this Unicode string. Its interpretation therefore also depends on the host keyboard layout.
-- `MediaAction/action` is symbolic, with stored values including `Stop`, `PrevTrack`, `NextTrack`, `VolumeUp` and `Mute`. These standard media actions become MAP remaps, without a macro file.
+- `MediaAction/action` is symbolic, with stored values including `Stop`, `PrevTrack`, `NextTrack`, `VolumeUp` and `Mute`. These standard media actions become MAP remaps, without a macro file; a media action with no key of the keyboard has no entry.
 
 The other remap fields remain in the XML even when inactive: examples have empty `programPath` and `sniperSwitchMode` = `WhilePressed`. Their presence does not imply an executable firmware operation on this keyboard.
 
@@ -185,7 +187,7 @@ The two macro event types present in the described backups are:
 | `KeyboardMacroActionEvent` | 200 | `keys`, `sub` |
 | `DelayMacroActionEvent` | 200 | `useRandom`, then `delay` if false, or `delayMin`, `delayMax` if true |
 
-Their event `base` is version **200** and has no fields. Keyboard events have a collection of symbolic keys and `sub` = `KeyPress` or `KeyRelease`. Delay values and random-delay bounds are in milliseconds. A stored random delay from 100 to 900 ms has `useRandom=true`, `delayMin=100` and `delayMax=900`, with no `delay` field; its [firmware event](macro.md#events) encodes those two bounds. This page does not define other event types.
+Their event `base` is version **200** and has no fields. Keyboard events have a collection of symbolic keys and `sub` = `KeyPress`, `KeyRelease` or `KeyStroke`. A `KeyStroke` remains one XML event; its firmware representation presses every key in the collection, then releases every key, with the zero delays described in [macro files](macro.md#recorded-macro-subtype-00). The executable events alone do not identify the original XML grouping; retaining the backup preserves that distinction. Delay values and random-delay bounds are in milliseconds. A stored random delay from 100 to 900 ms has `useRandom=true`, `delayMin=100` and `delayMax=900`, with no `delay` field; its [firmware event](macro.md#events) encodes those two bounds. This page does not define other event types.
 
 DAT entries and macro filenames follow the source-key order described in [PROFILE.DAT](profile-dat.md#entry-16-bytes), including the profile-button exception. This is independent of names and object IDs in the XML.
 
@@ -203,7 +205,7 @@ The following root properties use a `base` of version **200** with no fields. Th
 
 The four RGB triples in [PROFILE.I](profile-i.md) correspond to `profileIndicatorColor`, `indicatorColor`, `enabledIndicatorColor` and `disabledIndicatorColor`, respectively. Absent optional colours yield the default profile red, Win Lock on cyan and Win Lock off red. There is one brightness indicator colour, dimmed by the firmware at lower brightness levels. The `m1Color`/`m2Color`/`m3Color` metadata does not provide three extra indicator triples in the firmware file.
 
-The four supported Win Lock booleans map to bits 0 through 3 of [DAT byte 1](profile-dat.md#win-lock-options-byte-1), in the order `disableWinKey`, `disableAltTab`, `disableAltF4`, `disableShiftTab`. The stored model also has `disableEncryption` = `false`, `disableTouchpad` = `false`, `swapFKeyFunctions` = `true`, and `SideLightingProperty/enabled` = `true`. No additional executable K95 RGB Platinum setting is established for those fields.
+The Win Lock booleans map to bits 0 through 4 of [DAT byte 1](profile-dat.md#win-lock-options-byte-1), in the order `disableWinKey`, `disableAltTab`, `disableAltF4`, `disableShiftTab`, `disableEncryption`. `disableTouchpad` and `swapFKeyFunctions` are not written, and `SideLightingProperty` is not used for this keyboard, which has no side lighting in iCUE.
 
 ## Lighting model
 
@@ -244,7 +246,7 @@ Every effect includes animation data of version **300**, with:
 name, id, duration, brightness
 ```
 
-Here `duration` is in **milliseconds** and `brightness` is 10 in the stored layers. This duration is separate from the small numeric duration enum of `TypeLighting` below.
+Here `duration` is in **milliseconds** and `brightness` is 10 in the stored layers; the hardware files do not hold `brightness`, so another value changes no file. This duration is separate from the small numeric duration enum of `TypeLighting` below.
 
 Static and custom effects have an intermediate `base` of version **201**, containing the animation `base` followed by `transitions`. Each transition, version **200**, has `time` followed by `color`. Times are fractions of the animation duration, from 0 to 1; colours are the RGB/RGBA strings described above. The original points are retained in the backup, whereas a custom firmware descriptor holds 128 colour samples. Different point sets can therefore yield the same executable samples.
 
@@ -272,7 +274,7 @@ The following fields come after the effect's base. Static and custom effects use
 
 The XML version is independent of the firmware EffectType. The stored layouts and values relate to the binary files as follows:
 
-- **Static:** one transition supplies the colour; `opacity` is an integer from 0 to 255 supplying the alpha of every used `.r` entry. The `.d` is the fixed 37-byte static descriptor, with cells in `.k` and colours in the 1024-byte `.r`. On the UK/ISO layout, `AllLeds` produces 135 cells and 138 repeated colour entries, including the extra entries described in [lighting files](lighting.md#lght_nnr-the-colours-of-a-static-layer).
+- **Static:** one transition supplies the colour; `opacity` is an integer from 0 to 255 supplying the alpha of every used `.r` entry. The `.d` is the fixed 37-byte static descriptor, whatever the layer's start and stop hints, with cells in `.k` and colours in the 1024-byte `.r`. On the UK/ISO layout, `AllLeds` produces 135 cells and 138 repeated colour entries, including the extra entries described in [lighting files](lighting.md#lght_nnr-the-colours-of-a-static-layer). In a `ConcreteLeds` layer the indicator lights (`WinLock`, `Brightness`, `Key_Profile`) have no cell: iCUE leaves them out of `.k` and still counts them in `.r`.
 - **Solid, Gradient, Wave, Ripple:** a 553-byte `.d` and a `.k`, without `.r`. The millisecond animation duration becomes tenths of a second in `.d` (1000 ms becomes 10). XML `velocity` and `tailLength` are in tenths of the corresponding descriptor units: 20 and 40 become 2 and 4; fractional descriptor values are rounded to whole bytes. `angle` is in degrees and `isDoublesided` supplies the two-sided flag. Stored Ripple layers have `autoDuration=false` and `waveSpread=OnlyBetweenFronts`; their `colors` pair is zero and their colour curve is in `transitions`. The binary layout, origin behaviour and sample representation are in [custom effects](custom-effects.md).
 - **Predefined:** one enabled effect supplies a 13-byte `.d`, without `.k` or `.r`; it applies to the whole keyboard. For effects with a colour choice, `random=true` supplies random colour mode, otherwise the two ARGB colours supply alternating mode. Speed values are 1 (slow), 2 (medium), 3 (fast); TypeLighting key-mode durations are 1 (short), 2 (medium) and 3 (long), all observed in stored profiles. Direction values and their firmware representation are in [enumerations](enums.md). `clockwise` selects the spiral direction; `typeLightingBehavior` selects key mode (0) or ripple mode (1). Fields that are present in XML need not be active controls: Rain retains `direction`, although its descriptor's direction byte is zero and its editable parameters do not include a direction. The [predefined-effect table](predefined-effects.md) identifies which parameters reach each descriptor; inactive parameters have zero bytes there.
 

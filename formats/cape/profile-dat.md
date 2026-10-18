@@ -20,8 +20,9 @@ What the Win Lock button disables, while Win Lock is on:
 | 1 | `02` | Alt+Tab | Disable Alt+Tab |
 | 2 | `04` | Alt+F4 | Disable Alt+F4 |
 | 3 | `08` | Shift+Tab | Disable Shift+Tab |
+| 4 | `10` | not measured | the profile's `disableEncryption` setting |
 
-iCUE's default is `01`. Bits 4 to 7 are always 0 in iCUE's files.
+iCUE's default is `01`. iCUE writes bit 4 from the `disableEncryption` setting of the profile; what the firmware does with it was not measured. The profile's touchpad and F-key settings are not written. Bits 5 to 7 are always 0 in iCUE's files.
 
 On the keyboard a disabled combination reaches the host as its modifier alone: the firmware leaves the other key out of the report (with `04`, Alt+F4 arrives as Alt). With bit 0 the Windows key itself is not sent. New options take effect as soon as they are written and the keyboard is back in hardware mode, without switching slot.
 
@@ -33,9 +34,9 @@ offset  size  field
 1       4     name of the macro file, ASCII, e.g. "M000"
 5       3     size of the macro file in bytes (u24)
 8       1     start condition: 00 on press, 11 on release
-9       1     run type: 01 run once, 03 while pressed, 04 toggle, 84 (below)
-10      1     repeat count: 01; 00 with run type 84
-11      5     zeros
+9       1     run type: 01 run once, 03 while pressed, 04 toggle; bit 7: repeat without end (below)
+10      2     repeat count (u16): 01 without repetition; 00 with bit 7 of the run type
+12      4     zeros
 ```
 
 The key is a [key index](key-index.md). iCUE writes the macro files before `PROFILE.DAT`, and names them in the order of the entries (ascending iCUE key id, normally the same as firmware key-index order) in lower-case hexadecimal: `M000` ... `M009`, `M00a`, ... The name is only the string this entry points to.
@@ -52,10 +53,11 @@ A Macro assigned to the profile button is the exception to firmware key-index or
 | `00 04 01` | toggle | toggle |
 | `00 84 00` | autofire: the first press starts the macro over and over, until the key is pressed again | the toggle mode of "Imitate holding key" |
 
-- iCUE offers the four options of the third column for a recorded macro, as alternatives. A text and a key combination always have `00 01 01`.
+- iCUE offers the four options of the third column for a recorded macro, as alternatives. A text, a key combination and "Imitate holding key" on press always have `00 01 01`, whatever execution option their action has.
+- For a recorded macro iCUE takes the start and the run type from its execution option: on release starts at `11`, while pressed runs `03`, toggle `04`, and every other option, the long presses included, is `00 01`. Its repeat option sets the count: none is `01`, a number of repeats N is N + 1, and repeating without end sets bit 7 of the run type with a count of `00` (the firmware's behaviour with these was not measured). The macro's termination and priority options, and the delays between repeats, are not written.
 - Run type `84` with repeat `00` is the entry of a key remap with "Imitate holding key" in its toggle mode (its macro file: press, delay 0, release; see [macro files](macro.md#imitate-holding-key)). It is the only entry seen with bit 7 of byte 9 set; what that bit means on its own is not known. On the keyboard the press and release of the macro repeat about every 5 ms.
 - What the firmware does exactly with run type `04` (toggle) was not measured.
-- iCUE's names for the run types: Uninterrupted 1, Queued 2, WhilePressed 3, OnToggle 4, SmartStop 5; for the start conditions OnPress 0 and OnRelease `11`. iCUE does not write 2 or 5, a combination of start `11` with run type 3, or a repeat count other than 1 (except with `84`), for this keyboard.
+- iCUE's names for the run types: Uninterrupted 1, Queued 2, WhilePressed 3, OnToggle 4, SmartStop 5; for the start conditions OnPress 0 and OnRelease `11`. iCUE does not write 2 or 5, or a combination of start `11` with run type 3, for this keyboard; a repeat count other than 1 only for a recorded macro that repeats, or `00` with bit 7.
 
 ## Examples
 

@@ -37,7 +37,7 @@ The first byte tells the kind of event: bit 7 clear, a key event (bit 5 set for 
 
 ### Recorded macro (subtype 00)
 
-Key presses, key releases and delays, as recorded or edited. iCUE records from the keyboard only, keeps at most **256 rows** (a delay is a row) and takes delays of **0 to 4095 ms** in a macro of a hardware profile, each a constant or a random delay. A right Alt recorded as AltGr is the right Alt (`43`) alone, and the firmware plays it as AltGr.
+Key presses, key releases and delays, as recorded or edited. iCUE records from the keyboard only, keeps at most **256 rows** (a delay is a row) and takes delays of **0 to 4095 ms** in a macro of a hardware profile, each a constant or a random delay. Those are limits of its editor: its writer writes a profile that holds more rows, a longer delay in the long form, and a random delay with each bound cut to 4095 ms, in the order given. An XML `KeyboardMacroActionEvent` contains a `keys` collection and a `sub` of `KeyPress`, `KeyRelease` or `KeyStroke`. A keyboard event of several keys becomes one firmware event per key; `KeyStroke` writes all the presses, then all the releases. It remains a single event in the XML backup, which preserves grouping that cannot be recovered from the executable events alone; mouse, scroll and media events of a macro are left out. A right Alt recorded as AltGr is the right Alt (`43`) alone, and the firmware plays it as AltGr.
 
 ```
 "a (145 ms) a released (437 ms) b (104 ms) b released": 7 events
@@ -55,14 +55,14 @@ Right Alt held around a key, as recorded
 
 ### Text (subtype 03)
 
-iCUE turns the text into key events with a fixed **US layout** table, whatever the layout of the PC or of the keyboard:
+iCUE turns the text into key events with a fixed **US layout** table, whatever the layout of the PC or of the keyboard. It first converts the text to Latin-1: each UTF-16 unit beyond U+00FF becomes a `?`, which is typed as Shift+`/` (an emoji, two units, is `??`).
 
 - a character is press, delay 0, release (3 events); a character that needs Shift is left Shift press, the key, left Shift release, with delays of 0 between them (7 events);
 - between two characters a delay event with the delay between characters (0 by default), none after the last;
 - a space is `40`, a tab `18`, a line break one Enter (`52`);
-- a character that is not in the table is dropped without a word.
+- a character that is not in the table is dropped without a word (an accented Latin-1 letter, a carriage return).
 
-iCUE takes at most **1024 characters** (a line break counts as one) and a delay between characters of **0 to 99999 ms**, written as a long delay from 8192 ms. So 1024 characters without Shift make 4095 events (3 per character and 1023 delays), a file of 8198 bytes; 1024 characters that all need Shift, the most, make 8191 events (7 per character and 1023 delays), a file of 16 390 bytes, or 18 436 bytes when the delay between characters is a long one *(inferred: worked out from the event sizes)*.
+iCUE's editor takes at most **1024 characters** (a line break counts as one) and a delay between characters of **0 to 99999 ms**, written as a long delay from 8192 ms. So 1024 characters without Shift make 4095 events (3 per character and 1023 delays), a file of 8198 bytes; 1024 characters that all need Shift, the most, make 8191 events (7 per character and 1023 delays), a file of 16 390 bytes, or 18 436 bytes when the delay between characters is a long one *(inferred: worked out from the event sizes)*.
 
 ```
 "ciao", no delay: 15 events
